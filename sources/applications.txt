@@ -1,0 +1,1 @@
+me2cp mosaic-components-me2cp/main.go
