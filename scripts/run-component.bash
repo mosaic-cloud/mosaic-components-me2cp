@@ -1,9 +1,8 @@
 #!/dev/null
 
-set -x
-
 _identifier="${1:-00000000bdebd8cfcd967b57cfbe7c81dc392525}"
 _fqdn="${mosaic_node_fqdn:-mosaic-0.loopback.vnet}"
+_ip="${mosaic_node_ip:-127.0.155.0}"
 
 if test -n "${mosaic_component_temporary:-}" ; then
 	_tmp="${mosaic_component_temporary:-}"
@@ -18,11 +17,12 @@ _run_env=(
 		mosaic_component_identifier="${_identifier}"
 		mosaic_component_temporary="${_tmp}"
 		mosaic_node_fqdn="${_fqdn}"
+		mosaic_node_ip="${_ip}"
 		transcript_level=information
 )
 
 if test "${_identifier}" != 00000000bdebd8cfcd967b57cfbe7c81dc392525 ; then
-	if ! test "${#}" -gt 2 ; then
+	if ! test "${#}" -gt 1 ; then
 		echo "[ee] invalid arguments; aborting!" >&2
 		exit 1
 	fi

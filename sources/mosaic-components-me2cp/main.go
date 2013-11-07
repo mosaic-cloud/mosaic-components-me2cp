@@ -16,6 +16,9 @@ import "vgl/transcript"
 
 func main () () {
 	
+	_transcript := packageTranscript
+	_transcript.TraceInformation ("initializing the ME2-based component proxy...")
+	
 	var _componentIdentifier string
 	var _channelEndpointIp string
 	var _channelEndpointPort uint16
@@ -23,10 +26,6 @@ func main () () {
 	var _channelOutboundStream *os.File
 	var _controllerUrl string
 	var _bundle string
-	
-	_transcript := packageTranscript
-	
-	_transcript.TraceInformation ("initializing the ME2-based component proxy...")
 	
 	_arguments := os.Args
 	if len (_arguments) < 1 {
@@ -36,20 +35,29 @@ func main () () {
 	switch _arguments[1] {
 		
 		case "component" :
-			if len (_arguments) != 7 {
+			if len (_arguments) != 7 && len (_arguments) != 5 {
 				_transcript.TraceError ("invalid component arguments (expected only the identifier); aborting!")
 				os.Exit (1)
 			}
 			_componentIdentifier = _arguments[2]
-			_channelEndpointIp = _arguments[5]
-			if _port, _error := strconv.ParseUint (_arguments[6], 10, 16); _error != nil {
-				_transcript.TraceError ("invalid channel edpoint ip; aborting!")
-				os.Exit (1)
-			} else {
-				_channelEndpointPort = uint16 (_port)
-			}
 			_controllerUrl = _arguments[4]
 			_bundle = _arguments[3]
+			if len (_arguments) == 7 {
+				_channelEndpointIp = _arguments[5]
+				if _port, _error := strconv.ParseUint (_arguments[6], 10, 16); _error != nil {
+					_transcript.TraceError ("invalid channel edpoint ip; aborting!")
+					os.Exit (1)
+				} else {
+					_channelEndpointPort = uint16 (_port)
+				}
+			} else {
+				_channelEndpointIp = os.Getenv ("mosaic_node_ip")
+				if _channelEndpointIp == "" {
+					_transcript.TraceError ("missing channel endpoint ip; aborting!")
+					os.Exit (1)
+				}
+				_channelEndpointPort = 0
+			}
 			_channelInboundStream = os.Stdin
 			_channelOutboundStream = os.Stdout
 		
@@ -63,7 +71,11 @@ func main () () {
 			_channelEndpointIp = defaultChannelEndpointIp
 			_channelEndpointPort = defaultChannelEndpointPort
 			_controllerUrl = defaultControllerUrl
-			_bundle = defaultBundle
+			_bundle = os.Getenv ("_me2cp_bundle")
+			if _bundle == "" {
+				_transcript.TraceError ("missing bundle; aborting!")
+				os.Exit (1)
+			}
 			_channelInboundStream = os.Stdin
 			_channelOutboundStream = os.Stdout
 		
@@ -131,7 +143,6 @@ func main () () {
 
 var packageTranscript = transcript.NewPackageTranscript ()
 
-var defaultBundle = "none"
 var defaultControllerUrl = "http://127.0.0.1:8089/"
 var defaultChannelEndpointIp = "127.0.0.1"
 var defaultChannelEndpointPort uint16 = 24704
