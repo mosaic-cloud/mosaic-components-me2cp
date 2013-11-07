@@ -22,7 +22,7 @@ _run_env=(
 )
 
 if test "${_identifier}" != 00000000bdebd8cfcd967b57cfbe7c81dc392525 ; then
-	if ! test "${#}" -gt 1 ; then
+	if ! test "${#}" -ge 2 ; then
 		echo "[ee] invalid arguments; aborting!" >&2
 		exit 1
 	fi

@@ -35,14 +35,18 @@ func main () () {
 	switch _arguments[1] {
 		
 		case "component" :
-			if len (_arguments) != 7 && len (_arguments) != 5 {
-				_transcript.TraceError ("invalid component arguments (expected only the identifier); aborting!")
+			if ! (len (_arguments) == 4 || len (_arguments) == 5 || len (_arguments) == 7) {
+				_transcript.TraceError ("invalid component arguments (expected 4, 5 or 7); aborting!")
 				os.Exit (1)
 			}
 			_componentIdentifier = _arguments[2]
-			_controllerUrl = _arguments[4]
 			_bundle = _arguments[3]
-			if len (_arguments) == 7 {
+			if len (_arguments) >= 5 {
+				_controllerUrl = _arguments[4]
+			} else {
+				_controllerUrl = defaultControllerUrl
+			}
+			if len (_arguments) >= 7 {
 				_channelEndpointIp = _arguments[5]
 				if _port, _error := strconv.ParseUint (_arguments[6], 10, 16); _error != nil {
 					_transcript.TraceError ("invalid channel edpoint ip; aborting!")
