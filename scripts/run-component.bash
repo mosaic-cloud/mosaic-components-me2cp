@@ -12,7 +12,7 @@ else
 	_tmp="/tmp/mosaic/components/${_identifier}"
 fi
 
-_run_bin="${_applications_elf}/me2cp.elf"
+_run_bin="${_applications_elf}/component-backend.elf"
 _run_env=(
 		mosaic_component_identifier="${_identifier}"
 		mosaic_component_temporary="${_tmp}"
