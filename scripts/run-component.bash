@@ -12,6 +12,10 @@ else
 	_tmp="/tmp/mosaic/components/${_identifier}"
 fi
 
+if test -n "${mosaic_component_log:-}" ; then
+	exec 2>"${mosaic_component_log}"
+fi
+
 _run_bin="${_applications_elf}/component-backend.elf"
 _run_env=(
 		mosaic_component_identifier="${_identifier}"
