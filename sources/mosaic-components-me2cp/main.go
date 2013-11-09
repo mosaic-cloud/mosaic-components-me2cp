@@ -3,9 +3,13 @@
 package main
 
 
+import "bytes"
+import "encoding/json"
 import "fmt"
 import "io"
+import "io/ioutil"
 import "net"
+import "net/http"
 import "os"
 import "strconv"
 import "sync"
@@ -26,6 +30,7 @@ func main () () {
 	var _channelOutboundStream *os.File
 	var _controllerUrl string
 	var _bundle string
+	var _container string
 	
 	_arguments := os.Args
 	if len (_arguments) < 1 {
@@ -44,7 +49,7 @@ func main () () {
 			if len (_arguments) >= 5 {
 				_controllerUrl = _arguments[4]
 			} else {
-				_controllerUrl = defaultControllerUrl
+				_controllerUrl = ""
 			}
 			if len (_arguments) >= 7 {
 				_channelEndpointIp = _arguments[5]
@@ -55,7 +60,7 @@ func main () () {
 					_channelEndpointPort = uint16 (_port)
 				}
 			} else {
-				_channelEndpointIp = os.Getenv ("mosaic_node_ip")
+				_channelEndpointIp = os.Getenv (envkeyNodeIp)
 				if _channelEndpointIp == "" {
 					_transcript.TraceError ("missing channel endpoint ip; aborting!")
 					os.Exit (1)
@@ -67,21 +72,11 @@ func main () () {
 		
 		case "standalone" :
 			if len (_arguments) != 2 {
-				_transcript.TraceError ("invalid standalone arguments (expected no others)")
+				_transcript.TraceError ("invalid standalone arguments (expected no others); aborting!")
 				os.Exit (1)
 			}
-			_transcript.TraceError ("although standalone stdio is still piped...")
-			_componentIdentifier = ""
-			_channelEndpointIp = defaultChannelEndpointIp
-			_channelEndpointPort = defaultChannelEndpointPort
-			_controllerUrl = defaultControllerUrl
-			_bundle = os.Getenv ("_me2cp_bundle")
-			if _bundle == "" {
-				_transcript.TraceError ("missing bundle; aborting!")
-				os.Exit (1)
-			}
-			_channelInboundStream = os.Stdin
-			_channelOutboundStream = os.Stdout
+			_transcript.TraceError ("standalone is not implemented; aborting!")
+			os.Exit (1)
 		
 		default :
 			_transcript.TraceError ("invalid component mode `%s`; aborting!", _arguments[1])
@@ -90,6 +85,13 @@ func main () () {
 	
 	if _componentIdentifier != "" {
 		_transcript.TraceInformation ("  * using the identifier `%s`;", _componentIdentifier)
+	}
+	
+	if _controllerUrl == "" {
+		_controllerUrl = os.Getenv (envkeyControllerUrl)
+	}
+	if _controllerUrl == "" {
+		_controllerUrl = defaultControllerUrl
 	}
 	
 	_transcript.TraceInformation ("preparing the channel endpoint accepter...")
@@ -112,7 +114,32 @@ func main () () {
 	_transcript.TraceInformation ("  * using the bundle `%s`;", _bundle)
 	
 	_transcript.TraceInformation ("creating the the ME2 container...")
-	_transcript.TraceInformation ("!!! not implemented yet !!!!")
+	var _startOutputs map[string]interface{}
+	_startInputs := map[string]interface{} {
+			"jsonrpc" : "2.0",
+			"method" : "manager.start",
+			"params" : map[string]interface{} {
+				"bundle_id" : _bundle,
+				"config" : map[string]interface{} {
+						"component-identifier" : _componentIdentifier,
+						"channel-endpoint" : fmt.Sprintf ("tcp:%s:%d", _channelEndpointIp, _channelEndpointPort),
+				},
+			},
+			"id" : 1,
+	}
+	if _startInputsData, _error := json.Marshal (_startInputs); _error != nil {
+		panic (_error)
+	} else if _response, _error := http.Post (_controllerUrl, "application/json", bytes.NewBuffer (_startInputsData)); _error != nil {
+		panic (_error)
+	} else if _startOutputsData, _error := ioutil.ReadAll (_response.Body); _error != nil {
+		panic (_error)
+	} else if _error := json.Unmarshal (_startOutputsData, &_startOutputs); _error != nil {
+		_transcript.TraceError ("  * invalid response: `%s`; `%s;`", string (_startOutputsData), _error.Error ())
+		panic (_error)
+	} else {
+		_container = _startOutputs["result"].(string)
+		_transcript.TraceInformation ("  * started container: `%s`;", _container)
+	}
 	
 	_transcript.TraceInformation ("waiting for a channel connection...")
 	var _connection net.Conn
@@ -147,6 +174,8 @@ func main () () {
 
 var packageTranscript = transcript.NewPackageTranscript ()
 
-var defaultControllerUrl = "http://127.0.0.1:8089/"
-var defaultChannelEndpointIp = "127.0.0.1"
-var defaultChannelEndpointPort uint16 = 24704
+var envkeyNodeIp = "mosaic_node_ip"
+var envkeyControllerUrl = "mosaic_me2_controller_url"
+var defaultControllerUrl = "http://127.0.0.1:8099/api"
+var defaultStandaloneChannelEndpointIp = "127.0.0.1"
+var defaultStandaloneChannelEndpointPort uint16 = 24704
