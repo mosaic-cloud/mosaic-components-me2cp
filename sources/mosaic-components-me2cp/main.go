@@ -137,7 +137,18 @@ func main () () {
 		_transcript.TraceError ("  * invalid response: `%s`; `%s;`", string (_startOutputsData), _error.Error ())
 		panic (_error)
 	} else {
-		_container = _startOutputs["result"].(string)
+		if _error, _exists := _startOutputs["error"]; _exists {
+			_transcript.TraceError ("  * failed: `%#v`;", _error)
+			panic ("failed")
+		} else if _result_1, _exists := _startOutputs["result"]; !_exists {
+			_transcript.TraceError ("  * invalid response: `%s`;", string (_startOutputsData))
+			panic ("failed")
+		} else if _result, _ok := _result_1.(string); !_ok {
+			_transcript.TraceError ("  * invalid response: `%s`;", string (_startOutputsData))
+			panic ("failed")
+		} else {
+			_container = _result
+		}
 		_transcript.TraceInformation ("  * started container: `%s`;", _container)
 	}
 	
