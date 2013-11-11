@@ -109,11 +109,11 @@ func main () () {
 	}
 	_transcript.TraceInformation ("  * using the endpoint `%s:%d`;", _channelEndpointIp, _channelEndpointPort)
 	
-	_transcript.TraceInformation ("preparing the the ME2 controller...")
+	_transcript.TraceInformation ("preparing the ME2 controller...")
 	_transcript.TraceInformation ("  * using the endpoint `%s`;", _controllerUrl)
 	_transcript.TraceInformation ("  * using the bundle `%s`;", _bundle)
 	
-	_transcript.TraceInformation ("creating the the ME2 container...")
+	_transcript.TraceInformation ("creating the ME2 container...")
 	var _startOutputs map[string]interface{}
 	_startInputs := map[string]interface{} {
 			"jsonrpc" : "2.0",
