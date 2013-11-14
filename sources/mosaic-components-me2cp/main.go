@@ -30,6 +30,7 @@ func main () () {
 	var _channelOutboundStream *os.File
 	var _controllerUrl string
 	var _bundle string
+	var _configuration map[string]interface{}
 	var _container string
 	
 	_arguments := os.Args
@@ -40,20 +41,26 @@ func main () () {
 	switch _arguments[1] {
 		
 		case "component" :
-			if ! (len (_arguments) == 4 || len (_arguments) == 5 || len (_arguments) == 7) {
-				_transcript.TraceError ("invalid component arguments (expected 4, 5 or 7); aborting!")
+			if ! (len (_arguments) == 4 || len (_arguments) == 5 || len (_arguments) == 6 || len (_arguments) == 8) {
+				_transcript.TraceError ("invalid component arguments (expected 4, 5, 6 or 8); aborting!")
 				os.Exit (1)
 			}
 			_componentIdentifier = _arguments[2]
 			_bundle = _arguments[3]
 			if len (_arguments) >= 5 {
-				_controllerUrl = _arguments[4]
+				if _error := json.Unmarshal ([]byte (_arguments[4]), &_configuration); _error != nil {
+					_transcript.TraceError ("invalid configuration: `%s`; aborting!", _error.Error ())
+					os.Exit (1)
+				}
+			}
+			if len (_arguments) >= 6 {
+				_controllerUrl = _arguments[5]
 			} else {
 				_controllerUrl = ""
 			}
-			if len (_arguments) >= 7 {
-				_channelEndpointIp = _arguments[5]
-				if _port, _error := strconv.ParseUint (_arguments[6], 10, 16); _error != nil {
+			if len (_arguments) >= 8 {
+				_channelEndpointIp = _arguments[6]
+				if _port, _error := strconv.ParseUint (_arguments[7], 10, 16); _error != nil {
 					_transcript.TraceError ("invalid channel edpoint ip; aborting!")
 					os.Exit (1)
 				} else {
@@ -123,6 +130,7 @@ func main () () {
 				"config" : map[string]interface{} {
 						"component-identifier" : _componentIdentifier,
 						"channel-endpoint" : fmt.Sprintf ("tcp:%s:%d", _channelEndpointIp, _channelEndpointPort),
+						"configuration" : _configuration,
 				},
 			},
 			"id" : 1,
