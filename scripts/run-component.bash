@@ -22,7 +22,6 @@ _run_env=(
 		mosaic_component_temporary="${_tmp}"
 		mosaic_node_fqdn="${_fqdn}"
 		mosaic_node_ip="${_ip}"
-		transcript_level=information
 )
 
 if test "${_identifier}" != 00000000bdebd8cfcd967b57cfbe7c81dc392525 ; then
