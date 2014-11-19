@@ -191,7 +191,7 @@ func main () () {
 }
 
 
-var packageTranscript = transcript.NewPackageTranscript ()
+var packageTranscript = transcript.NewPackageTranscript (transcript.InformationLevel)
 
 var envkeyNodeIp = "mosaic_node_ip"
 var envkeyControllerUrl = "mosaic_me2_controller_url"
